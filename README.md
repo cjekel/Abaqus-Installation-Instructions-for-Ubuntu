@@ -119,5 +119,5 @@ I would like to present my work around for this issue. I've made a python wrappe
  2. Make abq executable and available in your path. I placed abq in the Abaqus commands folder, then ran ```chmod +x abq```
  3. Run an Abaqus standard job by executing ```abq job=Job-1```. This will execute Job-1.inp, then this will kill the standard solver once Job-1.sta is completed.
 
-take a look at the code for abq
+take a look at the code for [abq](abq)
 
