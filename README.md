@@ -32,7 +32,30 @@ If there are many `Linux.sh` files to alter users may wish to edit them using so
 for f in $(find //home/kevin/Downloads/AM_SIM_Abaqus_Extend.AllOS -name "Linux.sh" -type f); do
         sudo gedit $f
 done
-```   
+
+---
+
+If you use openSUSE 15, It is easier to change /usr/bin/lsb_release from
+```sh
+MSG_DISTRIBUTOR="openSUSE project"
+```
+to
+```sh
+MSG_DISTRIBUTOR="SUSE"
+```
+First make a backup of lsb_release
+```sh
+sudo cp /usr/bin/lsb_release /usr/bin/lsb_release_bak
+```
+Then change the line in question with vim
+```sh
+sudo vim /usr/bin/lsb_release
+```
+Once the installation is complete (you may need to install motif with ```sudo zypper install motif```), then you can restore the lsb_release information.
+```sh
+sudo cp /usr/bin/lsb_release_bak /usr/bin/lsb_release
+```
+
 ## 3. Run installation GUIs
 From the relevant folders run:
 ```
@@ -75,3 +98,25 @@ case ${DSY_OS_Release} in
         exit 8;;
 esac
 ```
+### Notes on the abq2018 solver
+
+It has been pointed out that the *standard* process solver does not [terminate correctly](https://askubuntu.com/questions/1062058/process-hangs-before-termination-with-ubuntu-18-04/1111991#1111991). 
+
+I would like to present my work around for this issue. I've made a python wrapper for the abq2018 solver which checks the .sta file for completeness. Once the .sta file is complete, any process named standard will be killed. I've found that the solver exits gracefully when standard is killed and the analysis is complete.   
+
+**This work around is not a perfect solution. Current issues with this work around**:
+
+ 1. can't replace the abq2018 solver call directly
+ 2. will not work from GUI, must be run from the shell
+ 3. only parses job= argument
+ 4. you can only run one analysis at at time since all *standard* processes are killed
+ 5. abq will hang forever if .sta file is not created or modified
+
+**How to use this workaround**:
+
+ 1. Create Python file named abq. Code for abq is detailed below. If you are using a solver other than abq2018, replace the line cmd = 'abq20xx.. with the solver that you are using.
+ 2. Make abq executable and available in your path. I placed abq in the Abaqus commands folder, then ran ```chmod +x abq```
+ 3. Run an Abaqus standard job by executing ```abq job=Job-1```. This will execute Job-1.inp, then this will kill the standard solver once Job-1.sta is completed.
+
+take a look at the code for abq
+
