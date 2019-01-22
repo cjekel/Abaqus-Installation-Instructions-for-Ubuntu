@@ -1,0 +1,48 @@
+#!/usr/bin/python
+# MIT License
+# 
+# Copyright (c) 2019 Charles Jekel
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+import subprocess
+import sys
+import time
+arguments = sys.argv
+jobname = arguments[1].split('job=')[-1]
+cmd = 'abq2018 cpus=4 ask_delete=OFF background job=' + jobname
+p = subprocess.call(cmd, shell=True)
+
+complete = False
+termination_criteria = [' THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n',
+                        ' THE ANALYSIS HAS NOT BEEN COMPLETED\n']
+
+while complete is False:
+    # wait every 5 seconds
+    time.sleep(5)
+    try:
+        with open(jobname + '.sta', 'r') as f:
+            last = f.readlines()[-1]
+            if last in termination_criteria:
+                # this will kill any process named standard
+                subprocess.call('pgrep standard | xargs kill', shell=True)
+                complete = True
+    except IOError:
+        # model.sta has been deleted or doesn't exist
+        # try again in 5 seconds
+        time.sleep(5)
