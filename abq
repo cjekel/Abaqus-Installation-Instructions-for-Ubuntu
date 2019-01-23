@@ -23,18 +23,30 @@
 import subprocess
 import sys
 import time
+
+# options
+sleep_time = 5  # seconds
+max_run_time = 300.0  # seconds
+
 arguments = sys.argv
 jobname = arguments[1].split('job=')[-1]
+
 cmd = 'abq2018 cpus=4 ask_delete=OFF background job=' + jobname
 p = subprocess.call(cmd, shell=True)
 
 complete = False
 termination_criteria = [' THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n',
                         ' THE ANALYSIS HAS NOT BEEN COMPLETED\n']
+t = time.time()
+
+
+def run_time(t):
+    return time.time() - t
+
 
 while complete is False:
     # wait every 5 seconds
-    time.sleep(5)
+    time.sleep(sleep_time)
     try:
         with open(jobname + '.sta', 'r') as f:
             last = f.readlines()[-1]
@@ -45,4 +57,11 @@ while complete is False:
     except IOError:
         # model.sta has been deleted or doesn't exist
         # try again in 5 seconds
-        time.sleep(5)
+        time.sleep(sleep_time)
+    
+    if run_time(t) > max_run_time:
+        # kill standard process
+        subprocess.call('pgrep standard | xargs kill', shell=True)
+        # then sleep and exit
+        time.sleep(sleep_time)
+        complete = True
