@@ -31,7 +31,7 @@ max_run_time = 300.0  # seconds
 arguments = sys.argv
 jobname = arguments[1].split('job=')[-1]
 
-cmd = 'abq2018 cpus=4 ask_delete=OFF background job=' + jobname + ' > /dev/null'
+cmd = 'abq2018 cpus=4 ask_delete=OFF background job=' + jobname
 p = subprocess.call(cmd, shell=True)
 
 complete = False
